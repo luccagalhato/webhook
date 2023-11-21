@@ -6,32 +6,38 @@ import (
 	"net/http"
 )
 
-
 func main() {
-	// Configurar um endpoint para lidar com notificações
-	http.HandleFunc("/webhook", notificationHandler)
+	// Configurar o endpoint para receber webhooks
+	http.HandleFunc("/webhook", handleWebhook)
 
-	// Iniciar o servidor na porta 8080
-	fmt.Println("Servidor ouvindo na porta 8080...")
-	http.ListenAndServe(":8080", nil)
+	// Iniciar o servidor HTTP
+	port := 8080
+	fmt.Printf("Servidor Webhook iniciado na porta %d\n", port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err != nil {
+		fmt.Printf("Erro ao iniciar o servidor: %v\n", err)
+	}
 }
 
-
-func notificationHandler(w http.ResponseWriter, r *http.Request) {
-	// Lógica para processar a notificação recebida do Mercado Livre
+func handleWebhook(w http.ResponseWriter, r *http.Request) {
+	// Ler o corpo da requisição
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Erro ao ler o corpo da notificação", http.StatusInternalServerError)
+		http.Error(w, "Erro ao ler o corpo da requisição", http.StatusBadRequest)
 		return
 	}
 
-	// Aqui, você pode processar os dados recebidos do Mercado Livre
-	fmt.Println("Notificação recebida:", string(body))
+	// Processar o payload do webhook
+	processWebhook(body)
 
-	// Responda ao Mercado Livre com um status 200 para indicar que a notificação foi recebida com sucesso
+	// Responder ao Mercado Livre para confirmar o recebimento do webhook
 	w.WriteHeader(http.StatusOK)
 }
 
-
-
-
+func processWebhook(payload []byte) {
+	// Aqui você pode implementar a lógica para lidar com o payload do webhook
+	// Decodificar o payload e realizar ações com base nos eventos recebidos
+	fmt.Println("Webhook recebido:")
+	fmt.Println(string(payload))
+	// Adicione sua lógica de manipulação de webhook aqui
+}
